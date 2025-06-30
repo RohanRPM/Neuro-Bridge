@@ -1,4 +1,5 @@
 const Sentiment = require('sentiment');
+
 const sentiment = new Sentiment();
 
 async function analyzeMood(text) {
