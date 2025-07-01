@@ -24,5 +24,5 @@ def analyze_mood(text):
 
 # Test locally
 if __name__ == "__main__":
-    print(analyze_mood("I'm feeling great today!"))
+    print(analyze_mood("I'm not feeling great today. Despite the result came today and I failed. Trying to come up from this."))
     # Output: {'label': 'JOY', 'score': 1, 'confidence': 0.956}
