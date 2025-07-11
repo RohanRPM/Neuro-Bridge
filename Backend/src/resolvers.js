@@ -1,24 +1,58 @@
-const Sentiment = require('sentiment');
+const { db } = require('./firebaseAdmin');
+const { analyzeMood } = require('./ai/text_analysis');
 
-const sentiment = new Sentiment();
+module.exports = {
+  Query: {
+    // Always return an array, never null
+    getJournalEntries: async (parent, args, context) => {
+      try {
+        // (Optional) if you want per‑user entries:
+        // const { userId } = context;
+        // let ref = db.collection('journalEntries');
+        // if (userId) ref = ref.where('userId','==',userId);
 
-async function analyzeMood(text) {
-  try {
-    const result = sentiment.analyze(text);
-    let valence = 'NEUTRAL';
-    let score = 0;
-    
-    if (result.score > 0) {
-      valence = 'POSITIVE';
-      score = 1;
-    } else if (result.score < 0) {
-      valence = 'NEGATIVE';
-      score = -1;
+        const snapshot = await db.collection('journalEntries').get();
+        const entries = snapshot.docs.map(doc => ({
+          id: doc.id,
+          userId: doc.data().userId,
+          text: doc.data().text,
+          createdAt: doc.data().createdAt,
+        }));
+        return entries;
+      } catch (err) {
+        console.error('Error in getJournalEntries:', err);
+        return []; 
+      }
     }
-    
-    return { score, valence };
-  } catch (error) {
-    console.error('Mood analysis failed:', error);
-    return { score: 0, valence: 'NEUTRAL' };
+  },
+
+  Mutation: {
+    createJournalEntry: async (parent, { text }, context) => {
+      try {
+        // require authentication
+        const userId = context.userId || 'testUser';
+        // if (!userId) {
+        //   throw new Error('Not authenticated');
+        // }
+
+        // 1) analyze mood
+        const { score, valence } = await analyzeMood(text);
+
+        // 2) write entry
+        const createdAt = new Date().toISOString();
+        const ref = await db.collection('journalEntries').add({
+          userId,
+          text,
+          createdAt
+        });
+        const entryId = ref.id;
+
+        // 3) return MoodScore
+        return { entryId, score, valence };
+      } catch (err) {
+        console.error('Error in createJournalEntry:', err);
+        throw err;
+      }
+    }
   }
-}
+};
