@@ -3,56 +3,60 @@ const { analyzeMood } = require('./ai/text_analysis');
 
 module.exports = {
   Query: {
-    // Always return an array, never null
-    getJournalEntries: async (parent, args, context) => {
-      try {
-        // (Optional) if you want per‑user entries:
-        // const { userId } = context;
-        // let ref = db.collection('journalEntries');
-        // if (userId) ref = ref.where('userId','==',userId);
-
-        const snapshot = await db.collection('journalEntries').get();
-        const entries = snapshot.docs.map(doc => ({
-          id: doc.id,
-          userId: doc.data().userId,
-          text: doc.data().text,
-          createdAt: doc.data().createdAt,
-        }));
-        return entries;
-      } catch (err) {
-        console.error('Error in getJournalEntries:', err);
-        return []; 
+    getMyEntries: async (_parent, { after, limit }, context) => {
+      // const userId = context.userId;
+      // if (!userId) {
+      //   throw new Error('Not authenticated');
+      // }
+      const userId = context.userId || 'testUser'; 
+      
+      let query = db
+      .collection('journalEntries')
+      .where('userId', '==', userId)
+      .orderBy('createdAt', 'desc');
+      
+      if (after) {
+        query = query.startAfter(after);
       }
+      
+      query = query.limit(limit);
+      
+      const snap = await query.get();
+      return snap.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          userId: data.userId,
+          text: data.text,
+          createdAt: data.createdAt,
+          score: data.score,
+          valence: data.valence
+        };
+      });
     }
   },
 
   Mutation: {
-    createJournalEntry: async (parent, { text }, context) => {
-      try {
-        // require authentication
-        const userId = context.userId || 'testUser';
-        // if (!userId) {
+    createJournalEntry: async (_parent, { text }, context) => {
+      // const userId = context.userId;
+      // if (!userId) {
         //   throw new Error('Not authenticated');
         // }
-
-        // 1) analyze mood
-        const { score, valence } = await analyzeMood(text);
-
-        // 2) write entry
-        const createdAt = new Date().toISOString();
-        const ref = await db.collection('journalEntries').add({
-          userId,
-          text,
-          createdAt
-        });
-        const entryId = ref.id;
-
-        // 3) return MoodScore
-        return { entryId, score, valence };
-      } catch (err) {
-        console.error('Error in createJournalEntry:', err);
-        throw err;
+        const userId = context.userId || 'testUser'; 
+        if (text.trim().length === 0) {
+        throw new Error('Text cannot be empty');
       }
+
+      // 1) analyze
+      const { score, valence } = await analyzeMood(text);
+      const createdAt = new Date().toISOString();
+
+      // 2) persist
+      const entry = { userId, text, createdAt, score, valence };
+      const ref = await db.collection('journalEntries').add(entry);
+
+      // 3) return
+      return { id: ref.id, ...entry };
     }
   }
 };

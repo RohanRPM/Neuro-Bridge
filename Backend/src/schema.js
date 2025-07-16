@@ -11,6 +11,20 @@ module.exports = gql`
     userId: ID!
     text: String!
     createdAt: String!
+    score: Float       # include for convenience
+    valence: String
+  }
+
+  type Query {
+    # fetch all my entries, optional date range
+    getMyEntries(
+      after: String    # ISO date to paginate
+      limit: Int = 50
+    ): [JournalEntry!]!
+  }
+
+  type Mutation {
+    createJournalEntry(text: String!): JournalEntry!
   }
 
   type MoodScore {
@@ -19,11 +33,6 @@ module.exports = gql`
     valence: String!
   }
 
-  type Query {
-    getJournalEntries: [JournalEntry!]!  # Removed userId argument
-  }
 
-  type Mutation {
-    createJournalEntry(text: String!): MoodScore!  # Removed userId argument
-  }
+
 `;
