@@ -11,8 +11,8 @@ module.exports = gql`
     userId: ID!
     text: String!
     createdAt: String!
-    score: Float       # include for convenience
-    valence: String
+    score: Float!       # include for convenience
+    valence: String!
   }
 
   type Query {
@@ -25,6 +25,8 @@ module.exports = gql`
 
   type Mutation {
     createJournalEntry(text: String!): JournalEntry!
+    deleteJournalEntry(id: ID!): Boolean!
+
   }
 
   type MoodScore {
