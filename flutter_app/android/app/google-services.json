@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1005594903686",
+    "project_id": "neurobridge-backend",
+    "storage_bucket": "neurobridge-backend.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1005594903686:android:c8d043b328d439b9acbd07",
+        "android_client_info": {
+          "package_name": "com.example.flutter_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcZ7vlvcgcFdUlPblBWxCW0RteSg6i97E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
