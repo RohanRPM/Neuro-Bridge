@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:intl/intl.dart';
 import '../models/journal_entry.dart';
+import '../graphql_client.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 
 class JournalScreen extends StatefulWidget {
   @override
